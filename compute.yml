@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: EC2 Instances in Public and Private Subnets
+
+Parameters: 
+  VPC:
+    Type: String
+  PublicSubnet:
+    Type: String
+  PrivateSubnet:
+    Type: String
+  SSHKeyName:
+    Type: String
+
+Resources:
+  # Security Group for Public Subnet
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH traffic to Bastion instance
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Allow SSH from anywhere 
+
+  # EC2 Instance in Public Subnet (Bastion)
+  BastionInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.medium
+      ImageId: ami-0942ecd5d85baa812  
+      KeyName: !Ref SSHKeyName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref PublicSubnet
+          GroupSet:
+            - !Ref BastionSecurityGroup
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          # Install SSH server and start the service
+          apt-get install -y openssh-server
+          systemctl enable ssh
+          systemctl start ssh
+          
+
+  # EC2 Instance in Private Subnet
+  PrivateInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.medium
+      ImageId: ami-0942ecd5d85baa812  
+      KeyName: !Ref SSHKeyName
+      SubnetId: !Ref PrivateSubnet
+      SecurityGroupIds:
+        - !Ref BastionSecurityGroup  
+
+Outputs:
+  BastionInstanceId:
+    Value: !Ref BastionInstance
+    Description: "Bastion EC2 Instance ID in Public Subnet"
+
+  PrivateInstanceId:
+    Value: !Ref PrivateInstance
+    Description: "Private EC2 Instance ID in Private Subnet"

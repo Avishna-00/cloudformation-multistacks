@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Main Stack
+
+Resources: 
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://avishnacf-concurrent-test.s3.us-east-2.amazonaws.com/network.yml
+      Tags:
+        - Key: "Owner"
+          Value: "Avishna"
+        - Key: "Project"
+          Value: "Alert Action Automation"
+
+  ComputeStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://avishnacf-concurrent-test.s3.us-east-2.amazonaws.com/compute.yml
+      Parameters:
+        VPC: !GetAtt NetworkStack.Outputs.VPC
+        PublicSubnet: !GetAtt NetworkStack.Outputs.PublicSubnet
+        PrivateSubnet: !GetAtt NetworkStack.Outputs.PrivateSubnet
+        SSHKeyName: "APIM_Key"
+      Tags:
+         - Key: "Owner"
+           Value: "Avishna"
+         - Key: "Project"
+           Value: "Alert Action Automation"
+
+  CloudWatchStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://avishnacf-concurrent-test.s3.us-east-2.amazonaws.com/cloudwatch.yml
+      Parameters:
+        InstanceId: !GetAtt ComputeStack.Outputs.PrivateInstanceId
+        AlarmThreshold: 80
+
+Outputs:
+  VPC:
+    Value: !GetAtt NetworkStack.Outputs.VPC
+    Description: "VPC ID"
+  PublicSubnet:
+    Value: !GetAtt NetworkStack.Outputs.PublicSubnet
+    Description: "Public Subnet ID"
+  PrivateSubnet:
+    Value: !GetAtt NetworkStack.Outputs.PrivateSubnet
+    Description: "Private Subnet ID"
+  BastionInstanceId:
+    Value: !GetAtt ComputeStack.Outputs.BastionInstanceId
+    Description: "Bastion EC2 Instance ID"
+  PrivateInstanceId:
+    Value: !GetAtt ComputeStack.Outputs.PrivateInstanceId
+    Description: "Private EC2 Instance ID"
+
+

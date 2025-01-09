@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudWatch alarm for EC2 instance monitoring.
+
+Parameters:
+  InstanceId:
+    Type: String
+    Description: The ID of the EC2 instance to monitor.
+  AlarmThreshold:
+    Type: Number
+    Default: 80
+    Description: CPU utilization threshold for the alarm.
+
+Resources:
+  CPUUtilizationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "HighCPUUtilizationAlarm"
+      MetricName: "CPUUtilization"
+      Namespace: "AWS/EC2"
+      Statistic: "Average"
+      Period: 300  # 5-minute period
+      EvaluationPeriods: 1
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: "GreaterThanThreshold"
+      Dimensions:
+        - Name: "InstanceId"
+          Value: !Ref InstanceId
+
+
+# # Memory Alarm for EC2 Instance - if needed
+  # MemoryUtilizationAlarm:
+  #   Type: AWS::CloudWatch::Alarm
+  #   Properties:
+  #     AlarmName: "HighMemoryUtilizationAlarm"
+  #     MetricName: "MemoryUtilization"
+  #     Namespace: "System/Linux"
+  #     Statistic: "Average"
+  #     Period: 300 # 5-minute period
+  #     EvaluationPeriods: 1
+  #     Threshold: 80 # Memory threshold in percentage
+  #     ComparisonOperator: "GreaterThanThreshold"
+  #     Dimensions:
+  #       - Name: "InstanceId"
+  #         Value: !GetAtt ComputeStack.Outputs.PrivateInstanceId
+  #     # Omit AlarmActions and OKActions to keep them empty
+  #     AlarmActions: []
+  #     OKActions: []
+  #     InsufficientDataActions: []

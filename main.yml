@@ -5,7 +5,7 @@ Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://avishnacf-concurrent-test.s3.us-east-2.amazonaws.com/network.yml
+      TemplateURL: https://multistack-cf-s3.s3.us-east-2.amazonaws.com/network.yml
       Tags:
         - Key: "Owner"
           Value: "Avishna"
@@ -15,7 +15,7 @@ Resources:
   ComputeStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://avishnacf-concurrent-test.s3.us-east-2.amazonaws.com/compute.yml
+      TemplateURL: https://multistack-cf-s3.s3.us-east-2.amazonaws.com/compute.yml
       Parameters:
         VPC: !GetAtt NetworkStack.Outputs.VPC
         PublicSubnet: !GetAtt NetworkStack.Outputs.PublicSubnet
@@ -30,7 +30,7 @@ Resources:
   CloudWatchStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://avishnacf-concurrent-test.s3.us-east-2.amazonaws.com/cloudwatch.yml
+      TemplateURL: https://multistack-cf-s3.s3.us-east-2.amazonaws.com/cloudwatch.yml
       Parameters:
         InstanceId: !GetAtt ComputeStack.Outputs.PrivateInstanceId
         AlarmThreshold: 80
